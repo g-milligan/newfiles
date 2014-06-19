@@ -1,0 +1,5 @@
+C:\OpenGL\IDEsetup\g2NewFilesGenerator\bin\Release\g2NewFilesGenerator.exe
+C:\OpenGL\IDEsetup\g2NewFilesGenerator\bin\Release\g2NewFilesGenerator.pdb
+C:\OpenGL\IDEsetup\g2NewFilesGenerator\obj\x86\Release\g2NewFilesGenerator.csprojResolveAssemblyReference.cache
+C:\OpenGL\IDEsetup\g2NewFilesGenerator\obj\x86\Release\g2NewFilesGenerator.exe
+C:\OpenGL\IDEsetup\g2NewFilesGenerator\obj\x86\Release\g2NewFilesGenerator.pdb
