@@ -8,6 +8,9 @@ namespace g2NewFilesGenerator
     {
         static void Main(string[] args)
         {
+            //GET THE ROOT DIRECTORY FOR THE TEMPLATES
+            //========================================
+
             string newfile_templates = "newfile_templates";
             string startEscToken = "|_-+StrtToKen..=!_|"; string endEscToken = "|_--eNdToKen..=!_|";
             //bool foundDir = false;
@@ -32,9 +35,15 @@ namespace g2NewFilesGenerator
                 projFolder = projFolder.Substring(projFolder.LastIndexOf("\\") + 1);
             }
 
+            //IF THE ROOT TEMPLATE FOLDER EXISTS
+            //==================================
+
             string templateRootPath = upOneDirPath + "\\" + newfile_templates;
             if (Directory.Exists(templateRootPath))
             {
+                //GET A LIST OF DIRECTORIES THAT CONTAIN AT LEAST ONE FILE
+                //========================================================
+
                 //detect all of the folder paths that contain files
                 List<string> templateOptions = new List<string>();
                 List<string> templateOutputOptions = new List<string>();
@@ -49,6 +58,9 @@ namespace g2NewFilesGenerator
                     //if there is more than one template option
                     if (templateOptions.Count > 1)
                     {
+                        //ALLOW USER TO CHOOSE WHICH TEMPLATE DIRECTORY TO USE
+                        //====================================================
+
                         //for each folder path that contains file(s)
                         for (int t = 0; t < templateOptions.Count; t++)
                         {
@@ -86,6 +98,9 @@ namespace g2NewFilesGenerator
                             //if the integer is NOT too low
                             if (chosenTemplateIndex > -1)
                             {
+                                //DISPLAY THE CHOSEN TEMPLATE AND READ THE TOKENS FROM EACH FILE TEMPLATE
+                                //=======================================================================
+
                                 Console.Clear();
                                 Console.WriteLine("\n  TEMPLATE: \n");
                                 Console.WriteLine(templateOutputOptions[chosenTemplateIndex]);
@@ -100,6 +115,9 @@ namespace g2NewFilesGenerator
                                 FileInfo[] files = dir.GetFiles();
                                 foreach (FileInfo file in files)
                                 {
+                                    //STORE ORIGINAL FILE CONTENTS AND GET AN ARRAY OF TOKENS FOR EACH FILE
+                                    //=====================================================================
+
                                     //get the file contents
                                     string contents = System.IO.File.ReadAllText(file.FullName);
                                     //escape certain string contents
@@ -122,6 +140,9 @@ namespace g2NewFilesGenerator
                                 //if there are any tokens in any of the template files
                                 if (atLeastOneToken)
                                 {
+                                    //LOOP EACH FILE A SECOND TIME
+                                    //============================
+
                                     string configVarsMsg = "";
                                     configVarsMsg += "  CONFIGURE TEMPLATE VARIABLES: \n\n";
                                     //List<[tokenName]>
@@ -139,6 +160,10 @@ namespace g2NewFilesGenerator
                                                 fileName = fileName.Substring(fileName.LastIndexOf("\\") + 1);
                                             }
                                             configVarsMsg += "  "+fileName + "\n";
+
+                                            //LOOP THROUGH THE TOKENS INSIDE THE FILE
+                                            //=======================================
+
                                             //for each token that needs to be configured
                                             for (int t = 0; t < pathTokensPair.Value.Count; t++ )
                                             {
@@ -150,18 +175,26 @@ namespace g2NewFilesGenerator
                                                 //if this is not a blank token
                                                 if (uniqueTokenName != ".")
                                                 {
-                                                    if (!uniqueTokenNames.Contains(uniqueTokenName))
+                                                    //if this is NOT a literal token, eg: the file name is "hard-coded.txt"
+                                                    if (uniqueTokenName.IndexOf("\"") != 0 && uniqueTokenName.IndexOf("'") != 0)
                                                     {
-                                                        //add the unique token name, if not already in the list
-                                                        uniqueTokenNames.Add(uniqueTokenName);
+                                                        //if this token name is not already included in the list
+                                                        if (!uniqueTokenNames.Contains(uniqueTokenName))
+                                                        {
+                                                            //add the unique token name, if not already in the list
+                                                            uniqueTokenNames.Add(uniqueTokenName);
+                                                        }
                                                     }
                                                 }
                                             }
                                         }
                                     }
-                                    //if there are any NON blank token names (that were represented by a dot, .)
+                                    //if there are any unique tokens (Not represented by a dot ., nor a "static value")
                                     if (uniqueTokenNames.Count > 0)
                                     {
+                                        //ALLOW USER TO INPUT THEIR OWN TOKEN VALUES
+                                        //==========================================
+
                                         //show the configure variables message
                                         Console.WriteLine(configVarsMsg);
                                         //if there is only one token
@@ -199,6 +232,9 @@ namespace g2NewFilesGenerator
 
                                         Console.WriteLine("\n  OK, got it. Hit any key to build..."); Console.ReadKey();
 
+                                        //LOOP THROUGH TEMPLATE FILES A THIRD TIME
+                                        //========================================
+
                                         //for each template file
                                         foreach (KeyValuePair<string, List<string>> pathPair in pathTokensLookup)
                                         {
@@ -206,9 +242,16 @@ namespace g2NewFilesGenerator
                                             string fileContent = pathOriginalContentLookup[filePath];
                                             //Dictionary<[tokenKey], [tokenInputValue]>
                                             List<string> tokens = pathPair.Value;
+
+                                            //LOOP THROUGH ALL OF THE TOKENS IN THIS FILE
+                                            //===========================================
+
                                             //for each token in the file
                                             for (int t = 0; t < tokens.Count; t++)
                                             {
+                                                //FORMAT THE TOKEN VALUE DEPENDING ON IT'S TYPE
+                                                //=============================================
+
                                                 //get the token key, eg: <<type:casing:name>>
                                                 string tokenKey = tokens[t];
                                                 //split the token key parts up
@@ -219,9 +262,9 @@ namespace g2NewFilesGenerator
                                                 string type = getTokenPart("type", tokenParts);
                                                 //get the token casing
                                                 string casing = getTokenPart("casing", tokenParts);
-                                                //if not a blank tokenName, represented by a dot, .
+                                                //if not a blank tokenName, represented by a dot, . AND not a static value surrounded by "quotes"
                                                 string tokenValue = "";
-                                                if (tokenName != ".")
+                                                if (tokenName != "." && tokenName.IndexOf("\"") != 0 && tokenName.IndexOf("'") != 0)
                                                 {
                                                     //get the token value... the value is formatted based on the different token parts, eg: casing
                                                     tokenValue = tokenInputLookup[tokenName];
@@ -234,16 +277,22 @@ namespace g2NewFilesGenerator
                                                             tokenValue = tokenValue.ToLower();
                                                             break;
                                                         case "capitalize":
-                                                            tokenValue = tokenValue.ToLower();
                                                             string firstChar = tokenValue.Substring(0, 1);
                                                             string theRest = tokenValue.Substring(1);
                                                             firstChar = firstChar.ToUpper();
                                                             tokenValue = firstChar + theRest;
                                                             break;
+                                                        case "normal":
+                                                            //yep... do nothing. Leave as is
+                                                            break;
                                                         default:
                                                             break;
                                                     }
                                                 }
+
+                                                //INSERT THE FORMATTED TOKEN VALUE INTO THE CONTENT (OR SET IT AS A SPECIAL VALUE, LIKE FILENAME, ETC...)
+                                                //=======================================================================================================
+
                                                 //if this is a special token name
                                                 switch (type)
                                                 {
@@ -263,6 +312,29 @@ namespace g2NewFilesGenerator
                                                                 //set the new name of the file
                                                                 changedFileNames.Add(filePath, tokenValue);
                                                             }
+                                                            else
+                                                            {
+                                                                //no specified file name...
+
+                                                                //if the file name was literally hard-coded (surrounded by "quotes")
+                                                                if (tokenName.IndexOf("\"") == 0 || tokenName.IndexOf("'") == 0)
+                                                                {
+                                                                    //set the static filename value surrounded by "quotes"
+                                                                    tokenValue = tokenName;
+                                                                    //strip off starting quote
+                                                                    tokenValue = tokenValue.Substring(1);
+                                                                    //strip off ending quote
+                                                                    tokenValue = tokenValue.Substring(0, tokenValue.Length - 1);
+                                                                    //trim
+                                                                    tokenValue = tokenValue.Trim();
+                                                                    //if the literal file name value is not blank
+                                                                    if (tokenValue.Length > 0)
+                                                                    {
+                                                                        //set the static name of the file
+                                                                        changedFileNames.Add(filePath, tokenValue);
+                                                                    }
+                                                                }
+                                                            }
                                                         }
                                                         //since this token specifies a filename, it may also specify the root directory for the file (if not, changedFileDir = "")...
                                                         //if this file doesn't already have a designated changed sub directory
@@ -280,12 +352,16 @@ namespace g2NewFilesGenerator
                                                     default:
                                                         break;
                                                 }
-                                                //set the token value
+                                                //set the modified content into the array
                                                 pathOriginalContentLookup[filePath] = fileContent;
                                             }
                                         }
                                     }
                                 }
+
+                                //LOOP THROUGH TEMPLATE FILES A FOURTH TIME
+                                //=========================================
+
                                 Console.WriteLine("  -------------------------------------------------------");
                                 //for each file to create
                                 int fileCount = 0; int skippedFileCount = 0;
@@ -318,13 +394,14 @@ namespace g2NewFilesGenerator
                                     if (changedFileDirs.ContainsKey(filePath))
                                     {
                                         changedFileDir = changedFileDirs[filePath];
+                                        //*** replace tokens within the file directory
                                         //make sure each directory exists... create them if they don't
                                         string[] dirs = changedFileDir.Split(new char[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
                                         string currentDir = upOneDirPath + "\\" + projFolder + "\\";
                                         for (int d = 0; d < dirs.Length; d++)
                                         {
                                             //if this directory doesn't exist
-                                            currentDir += dirs[d] + "\\";
+                                            currentDir += dirs[d].Trim() + "\\";
                                             if (!Directory.Exists(currentDir))
                                             {
                                                 //create the directory

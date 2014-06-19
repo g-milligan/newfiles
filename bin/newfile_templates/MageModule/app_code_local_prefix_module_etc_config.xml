@@ -1,0 +1,44 @@
+<<filename:lowercase:app/code/local/prefix/modName/etc:"config">>
+<?xml version="1.0"?>
+<config>
+	<modules>
+		<<<var:normal:module prefix>>_<<var:capitalize:module name>>>
+			<version><<var:normal:extension version>></version>
+		</<<var:normal:module prefix>>_<<var:capitalize:module name>>>
+	</modules>
+	<global>
+		<models>
+			<<<var:lowercase:module name>>>
+				<class><<var:normal:module prefix>>_<<var:capitalize:module name>>_Model</class>
+			</<<var:lowercase:module name>>>
+		</models>
+		<blocks>
+			<<<var:lowercase:module name>>>
+				<class><<var:normal:module prefix>>_<<var:capitalize:module name>>_Block</class>
+			</<<var:lowercase:module name>>>
+		</blocks>
+		<helpers>
+			<<<var:lowercase:module name>>>
+				<class><<var:normal:module prefix>>_<<var:capitalize:module name>>_Helper</class>
+			</<<var:lowercase:module name>>>
+		</helpers>
+	</global>
+	<frontend>
+		<layout>
+			<updates>
+				<<<var:lowercase:module name>>>
+					<file>mg_<<var:lowercase:module name>>.xml</file>
+				</<<var:lowercase:module name>>>
+			</updates>
+		</layout>
+		<translate>
+			<modules>
+				<<<var:normal:module prefix>>_<<var:capitalize:module name>>>
+					<files>
+						<default><<var:normal:module prefix>>_<<var:capitalize:module name>>.csv</default>
+					</files>
+				</<<var:normal:module prefix>>_<<var:capitalize:module name>>>
+			</modules>
+		</translate>
+	</frontend>
+</config>

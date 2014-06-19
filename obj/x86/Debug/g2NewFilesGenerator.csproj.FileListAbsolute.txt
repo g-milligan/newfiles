@@ -9,3 +9,6 @@ C:\OpenGL\IDEsetup\g2NewFilesGenerator\bin\Debug\g2NewFilesGenerator.pdb
 C:\OpenGL\IDEsetup\g2NewFilesGenerator\obj\x86\Debug\g2NewFilesGenerator.csprojResolveAssemblyReference.cache
 C:\newfiles\obj\x86\Debug\g2NewFilesGenerator.exe
 C:\newfiles\obj\x86\Debug\g2NewFilesGenerator.pdb
+C:\newfiles\bin\Debug\g2NewFilesGenerator.exe
+C:\newfiles\bin\Debug\g2NewFilesGenerator.pdb
+C:\newfiles\obj\x86\Debug\g2NewFilesGenerator.csprojResolveAssemblyReference.cache
