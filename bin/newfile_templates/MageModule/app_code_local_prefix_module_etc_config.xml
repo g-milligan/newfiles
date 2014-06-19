@@ -1,43 +1,43 @@
-<<filename:lowercase:app/code/local/prefix/modName/etc:"config">>
+<<filename:l:app/code/local/prefix/modName/etc:"config">>
 <?xml version="1.0"?>
 <config>
 	<modules>
-		<<<var:normal:module prefix>>_<<var:capitalize:module name>>>
-			<version><<var:normal:extension version>></version>
-		</<<var:normal:module prefix>>_<<var:capitalize:module name>>>
+		<<<var:n:module prefix>>_<<var:c:module name>>>
+			<version><<var:n:extension version>></version>
+		</<<var:n:module prefix>>_<<var:c:module name>>>
 	</modules>
 	<global>
 		<models>
-			<<<var:lowercase:module name>>>
-				<class><<var:normal:module prefix>>_<<var:capitalize:module name>>_Model</class>
-			</<<var:lowercase:module name>>>
+			<<<var:l:module name>>>
+				<class><<var:n:module prefix>>_<<var:c:module name>>_Model</class>
+			</<<var:l:module name>>>
 		</models>
 		<blocks>
-			<<<var:lowercase:module name>>>
-				<class><<var:normal:module prefix>>_<<var:capitalize:module name>>_Block</class>
-			</<<var:lowercase:module name>>>
+			<<<var:l:module name>>>
+				<class><<var:n:module prefix>>_<<var:c:module name>>_Block</class>
+			</<<var:l:module name>>>
 		</blocks>
 		<helpers>
-			<<<var:lowercase:module name>>>
-				<class><<var:normal:module prefix>>_<<var:capitalize:module name>>_Helper</class>
-			</<<var:lowercase:module name>>>
+			<<<var:l:module name>>>
+				<class><<var:n:module prefix>>_<<var:c:module name>>_Helper</class>
+			</<<var:l:module name>>>
 		</helpers>
 	</global>
 	<frontend>
 		<layout>
 			<updates>
-				<<<var:lowercase:module name>>>
-					<file>mg_<<var:lowercase:module name>>.xml</file>
-				</<<var:lowercase:module name>>>
+				<<<var:l:module name>>>
+					<file>mg_<<var:l:module name>>.xml</file>
+				</<<var:l:module name>>>
 			</updates>
 		</layout>
 		<translate>
 			<modules>
-				<<<var:normal:module prefix>>_<<var:capitalize:module name>>>
+				<<<var:n:module prefix>>_<<var:c:module name>>>
 					<files>
-						<default><<var:normal:module prefix>>_<<var:capitalize:module name>>.csv</default>
+						<default><<var:n:module prefix>>_<<var:c:module name>>.csv</default>
 					</files>
-				</<<var:normal:module prefix>>_<<var:capitalize:module name>>>
+				</<<var:n:module prefix>>_<<var:c:module name>>>
 			</modules>
 		</translate>
 	</frontend>

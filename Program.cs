@@ -268,6 +268,28 @@ namespace g2NewFilesGenerator
                                                 {
                                                     //get the token value... the value is formatted based on the different token parts, eg: casing
                                                     tokenValue = tokenInputLookup[tokenName];
+                                                    //get the first letter of the casing 
+                                                    string firstCharCasing = casing.Trim().ToLower();
+                                                    firstCharCasing = firstCharCasing.Substring(0, 1);
+                                                    //default casing
+                                                    casing = "normal";
+                                                    //standardized what casing is assigned based on the first letter 
+                                                    //(for code-readability... no other reason)
+                                                    switch (firstCharCasing)
+                                                    {
+                                                        case "u":
+                                                            casing = "uppercase";
+                                                            break;
+                                                        case "l":
+                                                            casing = "lowercase";
+                                                            break;
+                                                        case "c":
+                                                            casing = "capitalize";
+                                                            break;
+                                                        default:
+                                                            break;
+                                                    }
+                                                    //format depending on casing
                                                     switch (casing)
                                                     {
                                                         case "uppercase":
