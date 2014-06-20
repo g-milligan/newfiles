@@ -1,47 +1,48 @@
-<<filename:l:app/code/local/[prefix]/[Module]/etc:"config">>
-<<var:n:module prefix => [prefix]>>
+<<filename:l:app/code/local/[Prefix]/[Module]/etc:"config">>
+<<var:n:module prefix => [Prefix]>>
+<<var:l:module prefix => [prefix]>>
 <<var:c:module name => [Module]>>
 <<var:l:module name => [module]>>
 
 <?xml version="1.0"?>
 <config>
-	<modules>
-		<[prefix]_[Module]>
+	<modules> <!-- define version and optionally, define dependencies -->
+		<[Prefix]_[Module]>
 			<version><<var:n:extension version>></version>
-		</[prefix]_[Module]>
+		</[Prefix]_[Module]>
 	</modules>
 	<global>
 		<models>
 			<[module]>
-				<class>[prefix]_[Module]_Model</class>
+				<class>[Prefix]_[Module]_Model</class>
 			</[module]>
 		</models>
 		<blocks>
 			<[module]>
-				<class>[prefix]_[Module]_Block</class>
+				<class>[Prefix]_[Module]_Block</class>
 			</[module]>
 		</blocks>
 		<helpers>
 			<[module]>
-				<class>[prefix]_[Module]_Helper</class>
+				<class>[Prefix]_[Module]_Helper</class>
 			</[module]>
 		</helpers>
 	</global>
-	<frontend>
+	<frontend><!-- define layout handler(s) and translate file(s) -->
 		<layout>
 			<updates>
 				<[module]>
-					<file>mg_[module].xml</file>
+					<file>[prefix]_[module].xml</file>
 				</[module]>
 			</updates>
 		</layout>
 		<translate>
 			<modules>
-				<[prefix]_[Module]>
+				<[Prefix]_[Module]>
 					<files>
-						<default>[prefix]_[Module].csv</default>
+						<default>[Prefix]_[Module].csv</default>
 					</files>
-				</[prefix]_[Module]>
+				</[Prefix]_[Module]>
 			</modules>
 		</translate>
 	</frontend>

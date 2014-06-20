@@ -360,6 +360,8 @@ namespace g2NewFilesGenerator
                                                             //if there is a specified file name (other than the existing template file's name)
                                                             if (tokenValue != "" && tokenValue != ".")
                                                             {
+                                                                //replace any aliases with real values that may be inside the filename
+                                                                tokenValue = getReplacedAliases(tokenValue, aliasValueLookup);
                                                                 //set the new name of the file
                                                                 changedFileNames.Add(filePath, tokenValue);
                                                             }
@@ -381,6 +383,8 @@ namespace g2NewFilesGenerator
                                                                     //if the literal file name value is not blank
                                                                     if (tokenValue.Length > 0)
                                                                     {
+                                                                        //replace any aliases with real values that may be inside the filename
+                                                                        tokenValue = getReplacedAliases(tokenValue, aliasValueLookup);
                                                                         //set the static name of the file
                                                                         changedFileNames.Add(filePath, tokenValue);
                                                                     }
@@ -740,8 +744,14 @@ namespace g2NewFilesGenerator
                             uniqueTokenName = uniqueTokenName.Substring(0, uniqueTokenName.LastIndexOf(">>"));
                         }
                     }
-                    //always trim and lowercase token name
-                    uniqueTokenName = uniqueTokenName.Trim(); uniqueTokenName = uniqueTokenName.ToLower();
+                    //always trim token name
+                    uniqueTokenName = uniqueTokenName.Trim(); 
+                    //if the token name is NOT a string literal... surrounded by "quotes"
+                    if (uniqueTokenName.IndexOf("\"") != 0 && uniqueTokenName.IndexOf("'") != 0)
+                    {
+                        //unique (non-literal) token names are always lowercase
+                        uniqueTokenName = uniqueTokenName.ToLower();
+                    }
                     returnStr = uniqueTokenName;
                     break;
                 case "alias":
