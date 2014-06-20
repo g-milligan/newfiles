@@ -107,15 +107,23 @@ namespace g2NewFilesGenerator
                                 Console.WriteLine("\n  ==========================================\n");
                                 //Dictionary<[filePath], [originalFileContent]>
                                 Dictionary<string, string> pathOriginalContentLookup = new Dictionary<string, string>();
-                                //Dictionary<[filePath], Dictionary<[tokenKey], [tokenInputValue]>>
+                                //Dictionary<[filePath], List<[tokenText]>>
                                 Dictionary<string, List<string>> pathTokensLookup = new Dictionary<string, List<string>>();
+                                //Dictionary<[filePath], Dictionary<[tokenAlias], [tokenStr]>>
+                                Dictionary<string, Dictionary<string, string>> pathAliasTokenStr = new Dictionary<string, Dictionary<string, string>>();
                                 bool atLeastOneToken = false;
+
+                                //LOOP EACH FILE THE FIRST TIME
+                                //1) get a dictionary; items are a file's content and file path is an item's key
+                                //2) get a dictionary; items are a list of token substrings in the content and file path is an item's key
+                                //=============================
+
                                 //get the files in this directory
                                 DirectoryInfo dir = new DirectoryInfo(templateOptions[chosenTemplateIndex]);
                                 FileInfo[] files = dir.GetFiles();
                                 foreach (FileInfo file in files)
                                 {
-                                    //STORE ORIGINAL FILE CONTENTS AND GET AN ARRAY OF TOKENS FOR EACH FILE
+                                    //STORE ORIGINAL FILE CONTENTS AND GET AN ARRAY OF TOKENS FOR THIS FILE
                                     //=====================================================================
 
                                     //get the file contents
@@ -128,9 +136,41 @@ namespace g2NewFilesGenerator
                                     //store the tokens for this file's content
                                     List<string> tokens = getTokensFromContent(contents);
                                     pathTokensLookup.Add(file.FullName, tokens);
+                                    //if there is at least one token in this file
                                     if (tokens.Count > 0)
                                     {
                                         atLeastOneToken = true;
+
+                                        //STORE ALL OF THE TOKEN ALIASES (IF ANY) FOR THIS FILE
+                                        //============================================
+
+                                        //for each token in this file
+                                        for (int t = 0; t < tokens.Count; t++)
+                                        {
+                                            //if this token has an alias
+                                            string tAlias = getTokenPart("alias", tokens[t]);
+                                            if (tAlias != "")
+                                            {
+                                                //if the name is not blank
+                                                string tName = getTokenPart("name", tokens[t]);
+                                                if (tName != "")
+                                                {
+                                                    //if this file path isn't already a key in the pathAliasTokenStr dictionary
+                                                    if (!pathAliasTokenStr.ContainsKey(file.FullName))
+                                                    {
+                                                        //create this path-key in the dictionary, Dictionary<[tokenAlias], [tokenStr]>
+                                                        Dictionary<string, string> aliasTokenStr = new Dictionary<string, string>();
+                                                        pathAliasTokenStr.Add(file.FullName, aliasTokenStr);
+                                                    }
+                                                    //if this alias isn't already listed for this file
+                                                    if (!pathAliasTokenStr[file.FullName].ContainsKey(tAlias))
+                                                    {
+                                                        //add the alias/name to the file's listing
+                                                        pathAliasTokenStr[file.FullName].Add(tAlias, tokens[t]);
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                                 //Dictionary<[filePath], [changedFileName]>
@@ -141,12 +181,14 @@ namespace g2NewFilesGenerator
                                 if (atLeastOneToken)
                                 {
                                     //LOOP EACH FILE A SECOND TIME
+                                    //1) assemble each unique token key name into a list where each key name appears only once 
                                     //============================
 
                                     string configVarsMsg = "";
                                     configVarsMsg += "  CONFIGURE TEMPLATE VARIABLES: \n\n";
                                     //List<[tokenName]>
                                     List<string> uniqueTokenNames = new List<string>();
+                                    //Dictionary<[tokenName], [nameAlias]>
                                     //for each file 
                                     foreach (KeyValuePair<string, List<string>> pathTokensPair in pathTokensLookup)
                                     {
@@ -162,6 +204,7 @@ namespace g2NewFilesGenerator
                                             configVarsMsg += "  "+fileName + "\n";
 
                                             //LOOP THROUGH THE TOKENS INSIDE THE FILE
+                                            //1) assemble each unique token key name into a list where each key name appears only once 
                                             //=======================================
 
                                             //for each token that needs to be configured
@@ -193,6 +236,7 @@ namespace g2NewFilesGenerator
                                     if (uniqueTokenNames.Count > 0)
                                     {
                                         //ALLOW USER TO INPUT THEIR OWN TOKEN VALUES
+                                        //1) accept an input value for each unique token
                                         //==========================================
 
                                         //show the configure variables message
@@ -220,7 +264,7 @@ namespace g2NewFilesGenerator
                                             }
                                         }
                                         Console.WriteLine("  -------------------------------------------------------\n");
-                                        //for each token require input
+                                        //for each token, require input
                                         Dictionary<string, string> tokenInputLookup = new Dictionary<string, string>();
                                         for (int i = 0; i < uniqueTokenNames.Count; i++)
                                         {
@@ -233,6 +277,8 @@ namespace g2NewFilesGenerator
                                         Console.WriteLine("\n  OK, got it. Hit any key to build..."); Console.ReadKey();
 
                                         //LOOP THROUGH TEMPLATE FILES A THIRD TIME
+                                        //1) format each unique token's input value
+                                        //2) replace the token string with the formatted input value within the file content
                                         //========================================
 
                                         //for each template file
@@ -243,86 +289,69 @@ namespace g2NewFilesGenerator
                                             //Dictionary<[tokenKey], [tokenInputValue]>
                                             List<string> tokens = pathPair.Value;
 
-                                            //LOOP THROUGH ALL OF THE TOKENS IN THIS FILE
+                                            //GET FORMATTED VALUES FOR ALIASES AND REMOVE ALIAS DECLARATIONS FROM FILE CONTENTS
+                                            //===========================================
+
+                                            //if there are any aliased tokens in this file
+                                            Dictionary<string, string> aliasValueLookup = new Dictionary<string, string>();
+                                            if (pathAliasTokenStr.ContainsKey(filePath))
+                                            {
+                                                //for each alias declaration inside the file
+                                                Dictionary<string, string> aliasTokens = pathAliasTokenStr[filePath];
+                                                foreach (KeyValuePair<string, string> aliasStrPair in aliasTokens)
+                                                {
+                                                    //if the alias doesn't already have an associated formatted value
+                                                    string aliasKey = aliasStrPair.Key;
+                                                    if (!aliasValueLookup.ContainsKey(aliasKey))
+                                                    {
+                                                        string tokenStr = aliasStrPair.Value;
+
+                                                        //remove the tokenStr (alias variable declaration) from fileContent
+                                                        fileContent = fileContent.Replace(tokenStr, "");
+
+                                                        //split the token key parts up
+                                                        string[] tokenParts = tokenStr.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
+                                                        //get the formatted token value
+                                                        string tokenValue = getFormattedTokenValue(tokenParts, tokenInputLookup);
+                                                        //associate this value with this alias (only for this file)
+                                                        aliasValueLookup.Add(aliasKey, tokenValue);
+                                                    }
+
+                                                }
+                                            }
+
+                                            //LOOP THROUGH ALL OF THE NON-ALIASED TOKENS IN THIS FILE
+                                            //3) NON-ALIASED TOKENS: format each unique token's input value
+                                            //4) NON-ALIASED TOKENS: replace the token string with the formatted input value within the file content
                                             //===========================================
 
                                             //for each token in the file
                                             for (int t = 0; t < tokens.Count; t++)
                                             {
-                                                //FORMAT THE TOKEN VALUE DEPENDING ON IT'S TYPE
+                                                //FORMAT THE TOKEN VALUE DEPENDING ON IT'S PARAMETERS
                                                 //=============================================
 
                                                 //get the token key, eg: <<type:casing:name>>
                                                 string tokenKey = tokens[t];
                                                 //split the token key parts up
                                                 string[] tokenParts = tokenKey.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
-                                                //get the token name
-                                                string tokenName = getTokenPart("name", tokenParts);
-                                                //get the token type
-                                                string type = getTokenPart("type", tokenParts);
-                                                //get the token casing
-                                                string casing = getTokenPart("casing", tokenParts);
-                                                //if not a blank tokenName, represented by a dot, . AND not a static value surrounded by "quotes"
-                                                string tokenValue = "";
-                                                if (tokenName != "." && tokenName.IndexOf("\"") != 0 && tokenName.IndexOf("'") != 0)
-                                                {
-                                                    //get the token value... the value is formatted based on the different token parts, eg: casing
-                                                    tokenValue = tokenInputLookup[tokenName];
-                                                    //get the first letter of the casing 
-                                                    string firstCharCasing = casing.Trim().ToLower();
-                                                    firstCharCasing = firstCharCasing.Substring(0, 1);
-                                                    //default casing
-                                                    casing = "normal";
-                                                    //standardized what casing is assigned based on the first letter 
-                                                    //(for code-readability... no other reason)
-                                                    switch (firstCharCasing)
-                                                    {
-                                                        case "u":
-                                                            casing = "uppercase";
-                                                            break;
-                                                        case "l":
-                                                            casing = "lowercase";
-                                                            break;
-                                                        case "c":
-                                                            casing = "capitalize";
-                                                            break;
-                                                        default:
-                                                            break;
-                                                    }
-                                                    //format depending on casing
-                                                    switch (casing)
-                                                    {
-                                                        case "uppercase":
-                                                            tokenValue = tokenValue.ToUpper();
-                                                            break;
-                                                        case "lowercase":
-                                                            tokenValue = tokenValue.ToLower();
-                                                            break;
-                                                        case "capitalize":
-                                                            string firstChar = tokenValue.Substring(0, 1);
-                                                            string theRest = tokenValue.Substring(1);
-                                                            firstChar = firstChar.ToUpper();
-                                                            tokenValue = firstChar + theRest;
-                                                            break;
-                                                        case "normal":
-                                                            //yep... do nothing. Leave as is
-                                                            break;
-                                                        default:
-                                                            break;
-                                                    }
-                                                }
+                                                //get the formatted token value
+                                                string tokenValue = getFormattedTokenValue(tokenParts, tokenInputLookup);
 
                                                 //INSERT THE FORMATTED TOKEN VALUE INTO THE CONTENT (OR SET IT AS A SPECIAL VALUE, LIKE FILENAME, ETC...)
                                                 //=======================================================================================================
 
-                                                //if this is a special token name
+                                                //get the token name
+                                                string tokenName = getTokenPart("name", tokenParts);
+                                                //get the token type
+                                                string type = getTokenPart("type", tokenParts);
                                                 switch (type)
                                                 {
                                                     case "var":
                                                         //replace the tokens with the actual values
                                                         fileContent = fileContent.Replace(tokenKey, tokenValue);
                                                         break;
-                                                    case "filename":
+                                                    case "filename": 
                                                         //remove these tokens from the file content
                                                         fileContent = fileContent.Replace(tokenKey, "");
                                                         //if this file doesn't already have a designated changed name
@@ -366,6 +395,8 @@ namespace g2NewFilesGenerator
                                                             string changedDir = getTokenPart("dir", tokenParts);
                                                             if (changedDir != "" && changedDir != ".")
                                                             {
+                                                                //replace any aliases with real values that may be inside the directory
+                                                                changedDir = getReplacedAliases(changedDir, aliasValueLookup);
                                                                 //set the new sub directory of the file
                                                                 changedFileDirs.Add(filePath, changedDir);
                                                             }
@@ -374,6 +405,8 @@ namespace g2NewFilesGenerator
                                                     default:
                                                         break;
                                                 }
+                                                //replace any aliases with real values that may be inside the fileContent
+                                                fileContent = getReplacedAliases(fileContent, aliasValueLookup);
                                                 //set the modified content into the array
                                                 pathOriginalContentLookup[filePath] = fileContent;
                                             }
@@ -382,6 +415,7 @@ namespace g2NewFilesGenerator
                                 }
 
                                 //LOOP THROUGH TEMPLATE FILES A FOURTH TIME
+                                //1) create a new file based on the corresponding template file (the new file will have real input values instead of tokens)
                                 //=========================================
 
                                 Console.WriteLine("  -------------------------------------------------------");
@@ -416,7 +450,6 @@ namespace g2NewFilesGenerator
                                     if (changedFileDirs.ContainsKey(filePath))
                                     {
                                         changedFileDir = changedFileDirs[filePath];
-                                        //*** replace tokens within the file directory
                                         //make sure each directory exists... create them if they don't
                                         string[] dirs = changedFileDir.Split(new char[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
                                         string currentDir = upOneDirPath + "\\" + projFolder + "\\";
@@ -531,6 +564,92 @@ namespace g2NewFilesGenerator
             Console.ReadKey();
         }
 
+        //replace the aliases inside fileContent with their associated value (if the alias is inside fileContent)
+        private static string getReplacedAliases(string fileContent, Dictionary<string, string> aliasValueLookup)
+        {
+            //if there are any aliases
+            if (aliasValueLookup.Count > 0)
+            {
+                //if there is any file content
+                if (fileContent.Trim().Length > 0)
+                {
+                    //for each alias
+                    foreach (KeyValuePair<string, string> aliasValPair in aliasValueLookup)
+                    {
+                        //if the file content contains this alias
+                        if (fileContent.Contains(aliasValPair.Key))
+                        {
+                            //replace this alias with the value inside file content
+                            fileContent = fileContent.Replace(aliasValPair.Key, aliasValPair.Value);
+                        }
+                    }
+                }
+            }
+            return fileContent;
+        }
+
+        //formats the value based on token parameters and input value, eg: decides the casing to apply to the user input
+        private static string getFormattedTokenValue(string[] tokenParts, Dictionary<string, string> tokenInputLookup)
+        {
+            //get the token name
+            string tokenName = getTokenPart("name", tokenParts);
+            //get the token type
+            string type = getTokenPart("type", tokenParts);
+            //get the token casing
+            string casing = getTokenPart("casing", tokenParts);
+            //if not a blank tokenName, represented by a dot, . AND not a static value surrounded by "quotes"
+            string tokenValue = "";
+            if (tokenName != "." && tokenName.IndexOf("\"") != 0 && tokenName.IndexOf("'") != 0)
+            {
+                //get the token value... the value is formatted based on the different token parts, eg: casing
+                tokenValue = tokenInputLookup[tokenName];
+                //get the first letter of the casing 
+                string firstCharCasing = casing.Trim().ToLower();
+                firstCharCasing = firstCharCasing.Substring(0, 1);
+                //default casing
+                casing = "normal";
+                //standardized what casing is assigned based on the first letter 
+                //(for code-readability... no other reason)
+                switch (firstCharCasing)
+                {
+                    case "u":
+                        casing = "uppercase";
+                        break;
+                    case "l":
+                        casing = "lowercase";
+                        break;
+                    case "c":
+                        casing = "capitalize";
+                        break;
+                    default:
+                        break;
+                }
+                //format depending on casing
+                switch (casing)
+                {
+                    case "uppercase":
+                        tokenValue = tokenValue.ToUpper();
+                        break;
+                    case "lowercase":
+                        tokenValue = tokenValue.ToLower();
+                        break;
+                    case "capitalize":
+                        string firstChar = tokenValue.Substring(0, 1);
+                        string theRest = tokenValue.Substring(1);
+                        firstChar = firstChar.ToUpper();
+                        tokenValue = firstChar + theRest;
+                        break;
+                    case "normal":
+                        //yep... do nothing. Leave as is
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            return tokenValue;
+        }
+
         private static string getTokenPart(string partKey, string tokenStr)
         {
             //get the token parts, eg: <<type:casing:name>>
@@ -604,15 +723,52 @@ namespace g2NewFilesGenerator
                 case "name":
                     //token name is always last part
                     string uniqueTokenName = tokenParts[tokenParts.Length - 1];
-                    //if token name contains >>
-                    if (uniqueTokenName.Contains(">>"))
+                    //if the token name contains a name alias, eg: {name}=>{shorter-alias}
+                    if (uniqueTokenName.Contains("=>"))
                     {
-                        //remove trailing >>
-                        uniqueTokenName = uniqueTokenName.Substring(0, uniqueTokenName.LastIndexOf(">>"));
+                        //get just the name part and remove the alias part
+                        uniqueTokenName = uniqueTokenName.Substring(0, uniqueTokenName.IndexOf("=>"));
+                    }
+                    else
+                    {
+                        //no name alias...
+
+                        //if token name contains >>
+                        if (uniqueTokenName.Contains(">>"))
+                        {
+                            //remove trailing >>
+                            uniqueTokenName = uniqueTokenName.Substring(0, uniqueTokenName.LastIndexOf(">>"));
+                        }
                     }
                     //always trim and lowercase token name
                     uniqueTokenName = uniqueTokenName.Trim(); uniqueTokenName = uniqueTokenName.ToLower();
                     returnStr = uniqueTokenName;
+                    break;
+                case "alias":
+                    returnStr = "";
+                    //recursively get type
+                    string tType = getTokenPart("type", tokenParts);
+                    //if this type is a "var" (only var types can have an alias)
+                    if (tType == "var")
+                    {
+                        //token name => alias is always last part
+                        string nameAndAlias = tokenParts[tokenParts.Length - 1];
+                        //if the token name contains a name alias, eg: {name}=>{shorter-alias}
+                        if (nameAndAlias.Contains("=>"))
+                        {
+                            //get just the alias part and remove the name part
+                            string aliasStr = nameAndAlias.Substring(nameAndAlias.IndexOf("=>") + "=>".Length);
+                            //if alias contains >>
+                            if (aliasStr.Contains(">>"))
+                            {
+                                //remove trailing >>
+                                aliasStr = aliasStr.Substring(0, aliasStr.LastIndexOf(">>"));
+                            }
+                            //trim the alias (alias is case sensitive so it does NOT get ToLower)
+                            aliasStr = aliasStr.Trim();
+                            returnStr = aliasStr;
+                        }
+                    }
                     break;
 
             }

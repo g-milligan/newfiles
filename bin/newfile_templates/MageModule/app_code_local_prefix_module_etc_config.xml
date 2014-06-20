@@ -1,43 +1,47 @@
-<<filename:l:app/code/local/prefix/modName/etc:"config">>
+<<filename:l:app/code/local/[prefix]/[Module]/etc:"config">>
+<<var:n:module prefix => [prefix]>>
+<<var:c:module name => [Module]>>
+<<var:l:module name => [module]>>
+
 <?xml version="1.0"?>
 <config>
 	<modules>
-		<<<var:n:module prefix>>_<<var:c:module name>>>
+		<[prefix]_[Module]>
 			<version><<var:n:extension version>></version>
-		</<<var:n:module prefix>>_<<var:c:module name>>>
+		</[prefix]_[Module]>
 	</modules>
 	<global>
 		<models>
-			<<<var:l:module name>>>
-				<class><<var:n:module prefix>>_<<var:c:module name>>_Model</class>
-			</<<var:l:module name>>>
+			<[module]>
+				<class>[prefix]_[Module]_Model</class>
+			</[module]>
 		</models>
 		<blocks>
-			<<<var:l:module name>>>
-				<class><<var:n:module prefix>>_<<var:c:module name>>_Block</class>
-			</<<var:l:module name>>>
+			<[module]>
+				<class>[prefix]_[Module]_Block</class>
+			</[module]>
 		</blocks>
 		<helpers>
-			<<<var:l:module name>>>
-				<class><<var:n:module prefix>>_<<var:c:module name>>_Helper</class>
-			</<<var:l:module name>>>
+			<[module]>
+				<class>[prefix]_[Module]_Helper</class>
+			</[module]>
 		</helpers>
 	</global>
 	<frontend>
 		<layout>
 			<updates>
-				<<<var:l:module name>>>
-					<file>mg_<<var:l:module name>>.xml</file>
-				</<<var:l:module name>>>
+				<[module]>
+					<file>mg_[module].xml</file>
+				</[module]>
 			</updates>
 		</layout>
 		<translate>
 			<modules>
-				<<<var:n:module prefix>>_<<var:c:module name>>>
+				<[prefix]_[Module]>
 					<files>
-						<default><<var:n:module prefix>>_<<var:c:module name>>.csv</default>
+						<default>[prefix]_[Module].csv</default>
 					</files>
-				</<<var:n:module prefix>>_<<var:c:module name>>>
+				</[prefix]_[Module]>
 			</modules>
 		</translate>
 	</frontend>
