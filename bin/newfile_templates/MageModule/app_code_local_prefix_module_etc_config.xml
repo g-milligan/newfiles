@@ -11,29 +11,37 @@
 			<version><<var:n:extension version>></version>
 		</[Prefix]_[Module]>
 	</modules>
-	<global>
-		<models>
-			<[module]>
-				<class>[Prefix]_[Module]_Model</class>
-			</[module]>
+	<global> <!-- defines module classes for helpers, models, and blocks -->
+		<models> <!-- "Mage::getModel('[prefix][module]/modelname');" instead of " new [Prefix]_[Module]_Model_Modelname();" -->
+			<[prefix][module]>
+				<class>[Prefix]_[Module]_Model</class> 
+				<!-- define the namespace of the class name, 
+				eg: for a class called "Object", the full class name would be "[Prefix]_[Module]_Model_Object"
+				Filepath: [Prefix]/[Module]/Model/Object.php
+				Access in code: Mage::getModel('[prefix][module]/object'); -->
+			</[prefix][module]>
 		</models>
 		<blocks>
-			<[module]>
+			<[prefix][module]>
 				<class>[Prefix]_[Module]_Block</class>
-			</[module]>
+			</[prefix][module]>
 		</blocks>
-		<helpers>
-			<[module]>
+		<helpers> <!-- "$this->helper('[prefix][module]')->someMethod();" -->
+			<[prefix][module]>
 				<class>[Prefix]_[Module]_Helper</class>
-			</[module]>
+				<!-- define the namespace of the class name, 
+				eg: for a class called "Doit", the full class name would be "[Prefix]_[Module]_Helper_Doit"
+				Filepath: [Prefix]/[Module]/Helper/Doit.php
+				Access in code: Mage::helper('[prefix][module]/doit'); -->
+			</[prefix][module]>
 		</helpers>
 	</global>
 	<frontend><!-- define layout handler(s) and translate file(s) -->
 		<layout>
 			<updates>
-				<[module]>
+				<[prefix][module]>
 					<file>[prefix]_[module].xml</file>
-				</[module]>
+				</[prefix][module]>
 			</updates>
 		</layout>
 		<translate>
